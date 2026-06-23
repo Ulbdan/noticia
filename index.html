@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Algo importante...</title>
+
+<style>
+
+/* ===== BACKGROUND ANIMADO ===== */
+body{
+    margin:0;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-family:'Segoe UI',sans-serif;
+    color:white;
+    overflow:hidden;
+
+    background:linear-gradient(
+        -45deg,
+        #667eea,
+        #764ba2,
+        #f093fb,
+        #6dd5ed
+    );
+
+    background-size:400% 400%;
+    animation:gradientMove 12s ease infinite;
+}
+
+@keyframes gradientMove{
+    0%{background-position:0% 50%}
+    50%{background-position:100% 50%}
+    100%{background-position:0% 50%}
+}
+
+/* ===== CONTENEDOR ===== */
+.container{
+    width:min(900px,92%);
+    padding:40px;
+    border-radius:28px;
+
+    background:rgba(255,255,255,.12);
+    backdrop-filter:blur(18px);
+
+    border:1px solid rgba(255,255,255,.25);
+
+    box-shadow:0 20px 60px rgba(0,0,0,.25);
+
+    text-align:center;
+}
+
+/* ===== BOTONES ===== */
+button{
+    border:none;
+    padding:12px 20px;
+    margin:6px;
+    border-radius:12px;
+    cursor:pointer;
+    font-weight:600;
+
+    background:linear-gradient(135deg,#ff7eb3,#ff758c);
+    color:white;
+
+    transition:.2s;
+}
+
+button:hover{
+    transform:scale(1.05);
+}
+
+/* ===== PANTALLAS ===== */
+.screen{display:none}
+
+/* ===== FRASE ===== */
+.word{
+    font-size:28px;
+    letter-spacing:4px;
+    line-height:2;
+    white-space:pre-wrap;
+    margin:20px 0;
+}
+
+/* ===== CANVAS ===== */
+canvas{
+    margin-bottom:10px;
+}
+
+/* ===== TITULOS ===== */
+h1{
+    font-size:2.2rem;
+}
+
+/* ===== CONFETTI ===== */
+#confettiCanvas{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+}
+
+.fade{
+    animation:fadeIn 1s ease;
+}
+
+@keyframes fadeIn{
+    from{opacity:0;transform:scale(.9)}
+    to{opacity:1;transform:scale(1)}
+}
+
+.word{
+    font-family: monospace;
+    letter-spacing: 2px;
+}
+
+</style>
+</head>
+
+<body>
+
+<canvas id="confettiCanvas"></canvas>
+
+<div class="container">
+
+<!-- INTRO -->
+
+<div id="intro" class="screen" style="display:block">
+
+    <h1>👀 Tengo algo importante que contarles...</h1>
+
+    <p>
+        Pero antes quiero que intenten adivinar.
+    </p>
+
+    <button onclick="showOptions()">
+        Intentar adivinar
+    </button>
+
+</div>
+
+<!-- OPCIONES -->
+<div id="options" class="screen">
+    <h2>¿Qué creen que es?</h2>
+
+    <button onclick="wrong()">Nuevo trabajo</button>
+    <button onclick="wrong()">Viaje</button>
+    <button onclick="wrong()">Boda</button>
+    <button onclick="startGame()">No tengo idea</button>
+
+    <p id="hint"></p>
+</div>
+
+<!-- JUEGO -->
+<div id="game" class="screen">
+
+    <h2>Descubran el mensaje...</h2>
+
+    <canvas id="hangmanCanvas" width="250" height="250"></canvas>
+
+    <div class="word" id="word"></div>
+
+    <div id="letters"></div>
+
+    <p>Errores: <span id="errors">0</span>/10</p>
+
+</div>
+
+<!-- REVEAL 1 -->
+<div id="reveal1" class="screen fade">
+    <h1>🎉 Lo lograron</h1>
+
+    <h2>
+        PRONTO HABRÁ UN NUEVO INTEGRANTE EN LA FAMILIA
+    </h2>
+
+    <button onclick="showFinal()">
+        Continuar
+    </button>
+</div>
+
+<!-- REVEAL FINAL -->
+<div id="reveal2" class="screen fade">
+
+    <h1 style="font-size:3rem">👶</h1>
+
+    <h1>Voy a ser papá</h1>
+
+    <p style="font-size:1.2rem;line-height:2">
+        Y como en los cuentos que uno no espera, la vida nos ha traído una noticia inesperada…<br>
+        una pequeña sorpresa que llega sin aviso, pero llena de luz.<br>
+		Hoy la recibo con el corazón abierto, con mucha emoción y ternura,<br>
+        y quería compartirla con mi familia, porque los cuentos más importantes siempre se viven mejor juntos. 💙
+    </p>
+
+</div>
+
+</div>
+
+<script>
+
+/* ===== PANTALLAS ===== */
+const screens = {
+    intro:document.getElementById("intro"),
+    options:document.getElementById("options"),
+    game:document.getElementById("game"),
+    reveal1:document.getElementById("reveal1"),
+    reveal2:document.getElementById("reveal2")
+};
+
+function show(s){
+    Object.values(screens).forEach(x=>x.style.display="none");
+    s.style.display="block";
+}
+
+function showOptions(){show(screens.options)}
+function showFinal(){ 
+    show(screens.reveal2);
+    launchConfetti();
+}
+
+/* ===== OPCIONES ===== */
+function wrong(){
+
+    const randomHint =
+        hints[Math.floor(Math.random()*hints.length)];
+
+    document.getElementById("hint").innerText =
+        randomHint;
+
+}
+
+const hints = [
+"😏 No, sigan intentando...",
+"👀 Mmm… interesante, pero no",
+"🤭 Eso no es, pero van cerca...",
+"🫣 No… esto es más grande",
+"😬 Se están acercando… pero no",
+"🎯 Frío, frío...",
+"🔥 Caliente… pero no es eso"
+];
+
+/* ===== FRASE ===== */
+const phrase =
+"PRONTO HABRA UN NUEVO INTEGRANTE EN LA FAMILIA"
+.split(" ");
+
+let guessed=[];
+let errors=0;
+const maxErrors=10;
+
+/* ===== INICIO ===== */
+function startGame(){
+    show(screens.game);
+
+    guessed=[];
+    errors=0;
+
+    document.getElementById("letters").innerHTML="";
+    createLetters();
+
+    updateWord();
+    drawHangman(errors);
+}
+
+/* ===== LETRAS ===== */
+function createLetters(){
+    const letters="ABCDEFGHIJKLMNÑOPQRSTUVWXYZ";
+
+    for(let l of letters){
+        let btn=document.createElement("button");
+        btn.innerText=l;
+
+        btn.onclick=()=>{
+            btn.disabled=true;
+            play(l);
+        };
+
+        document.getElementById("letters").appendChild(btn);
+    }
+}
+
+function play(letter){
+
+    let found=false;
+
+    for(let w of phrase){
+        if(w.includes(letter)) found=true;
+    }
+
+    if(found){
+        guessed.push(letter);
+    }else{
+        errors++;
+        document.getElementById("errors").innerText=errors;
+        drawHangman(errors);
+
+        if(errors>=maxErrors){
+            lose();
+            return;
+        }
+    }
+
+    updateWord();
+    checkWin();
+}
+
+/* ===== PALABRA ===== */
+function updateWord(){
+
+    const container =
+        document.getElementById("word");
+
+    container.innerHTML = "";
+
+    const fullPhrase =
+        phrase.join(" ");
+
+    for(let char of fullPhrase){
+
+        const span =
+            document.createElement("span");
+
+        // espacios entre palabras
+        if(char === " "){
+            span.innerHTML = "&nbsp;&nbsp;&nbsp;";
+        }
+        else if(guessed.includes(char)){
+            span.innerText = char;
+        }
+        else{
+            span.innerText = "_";
+        }
+
+        span.style.display = "inline-block";
+        span.style.minWidth = "18px";
+        span.style.textAlign = "center";
+
+        container.appendChild(span);
+    }
+}
+/* ===== GANAR ===== */
+function checkWin(){
+
+    let done=true;
+
+    for(let w of phrase){
+        for(let l of w){
+            if(!guessed.includes(l)) done=false;
+        }
+    }
+
+    if(done){
+        setTimeout(()=>{
+            show(screens.reveal1);
+        },800);
+    }
+}
+
+/* ===== PERDER ===== */
+function lose(){
+    document.getElementById("game").innerHTML=`
+        <h1>😵 Se ahorcaron</h1>
+        <p>Intenten de nuevo para descubrir la noticia</p>
+        <button onclick="location.reload()">Reintentar</button>
+    `;
+}
+
+/* ===== AHORCADO CANVAS ===== */
+const canvas=document.getElementById("hangmanCanvas");
+const ctx=canvas.getContext("2d");
+
+function drawHangman(e){
+
+    ctx.clearRect(0,0,250,250);
+    ctx.lineWidth=4;
+    ctx.strokeStyle="white";
+
+    if(e>=1){ctx.beginPath();ctx.moveTo(20,230);ctx.lineTo(180,230);ctx.stroke();}
+    if(e>=2){ctx.beginPath();ctx.moveTo(60,230);ctx.lineTo(60,20);ctx.stroke();}
+    if(e>=3){ctx.beginPath();ctx.moveTo(60,20);ctx.lineTo(150,20);ctx.stroke();}
+    if(e>=4){ctx.beginPath();ctx.moveTo(150,20);ctx.lineTo(150,50);ctx.stroke();}
+    if(e>=5){ctx.beginPath();ctx.arc(150,70,20,0,Math.PI*2);ctx.stroke();}
+    if(e>=6){ctx.beginPath();ctx.moveTo(150,90);ctx.lineTo(150,150);ctx.stroke();}
+    if(e>=7){ctx.beginPath();ctx.moveTo(150,110);ctx.lineTo(120,130);ctx.stroke();}
+    if(e>=8){ctx.beginPath();ctx.moveTo(150,110);ctx.lineTo(180,130);ctx.stroke();}
+    if(e>=9){ctx.beginPath();ctx.moveTo(150,150);ctx.lineTo(125,190);ctx.stroke();}
+    if(e>=10){ctx.beginPath();ctx.moveTo(150,150);ctx.lineTo(175,190);ctx.stroke();}
+}
+
+/* ===== CONFETTI ===== */
+const c=document.getElementById("confettiCanvas");
+const cx=c.getContext("2d");
+
+c.width=innerWidth;
+c.height=innerHeight;
+
+let conf=[];
+
+function launchConfetti(){
+
+for(let i=0;i<200;i++){
+    conf.push({
+        x:Math.random()*innerWidth,
+        y:-20,
+        s:Math.random()*6+3,
+        v:Math.random()*4+2,
+        col:["#ff7eb3","#ffd166","#06d6a0","#ffffff"][Math.floor(Math.random()*4)]
+    });
+}
+
+animate();
+
+}
+
+function animate(){
+
+cx.clearRect(0,0,c.width,c.height);
+
+conf.forEach(p=>{
+    cx.fillStyle=p.col;
+    cx.fillRect(p.x,p.y,p.s,p.s);
+    p.y+=p.v;
+});
+
+requestAnimationFrame(animate);
+
+}
+
+</script>
+
+</body>
+</html>
