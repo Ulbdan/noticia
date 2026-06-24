@@ -8,7 +8,6 @@
 
 <style>
 
-/* ===== BACKGROUND ANIMADO ===== */
 body{
     margin:0;
     height:100vh;
@@ -19,14 +18,7 @@ body{
     color:white;
     overflow:hidden;
 
-    background:linear-gradient(
-        -45deg,
-        #667eea,
-        #764ba2,
-        #f093fb,
-        #6dd5ed
-    );
-
+    background:linear-gradient(-45deg,#667eea,#764ba2,#f093fb,#6dd5ed);
     background-size:400% 400%;
     animation:gradientMove 12s ease infinite;
 }
@@ -37,82 +29,117 @@ body{
     100%{background-position:0% 50%}
 }
 
-/* ===== CONTENEDOR ===== */
 .container{
     width:min(900px,92%);
     padding:40px;
     border-radius:28px;
-
     background:rgba(255,255,255,.12);
     backdrop-filter:blur(18px);
-
     border:1px solid rgba(255,255,255,.25);
-
     box-shadow:0 20px 60px rgba(0,0,0,.25);
-
     text-align:center;
+    position:relative;
 }
 
-/* ===== BOTONES ===== */
 button{
     border:none;
     padding:12px 20px;
-    margin:6px;
+    margin-top:15px;
     border-radius:12px;
     cursor:pointer;
     font-weight:600;
-
     background:linear-gradient(135deg,#ff7eb3,#ff758c);
     color:white;
-
     transition:.2s;
 }
 
-button:hover{
-    transform:scale(1.05);
-}
+button:hover{transform:scale(1.05)}
 
-/* ===== PANTALLAS ===== */
 .screen{display:none}
 
-/* ===== FRASE ===== */
 .word{
     font-size:28px;
     letter-spacing:4px;
-    line-height:2;
-    white-space:pre-wrap;
     margin:20px 0;
+    font-family: monospace;
 }
 
-/* ===== CANVAS ===== */
-canvas{
-    margin-bottom:10px;
-}
+canvas{margin-bottom:10px}
 
-/* ===== TITULOS ===== */
-h1{
-    font-size:2.2rem;
-}
-
-/* ===== CONFETTI ===== */
 #confettiCanvas{
     position:fixed;
     inset:0;
     pointer-events:none;
+    z-index:5;
 }
 
-.fade{
-    animation:fadeIn 1s ease;
+#particlesCanvas{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:1;
 }
+
+.fade{animation:fadeIn 1s ease}
 
 @keyframes fadeIn{
     from{opacity:0;transform:scale(.9)}
     to{opacity:1;transform:scale(1)}
 }
 
-.word{
-    font-family: monospace;
-    letter-spacing: 2px;
+/* 🎬 TEXTO CINE */
+.cinema-text{
+    font-size:2.4rem;
+    letter-spacing:6px;
+    font-weight:bold;
+    white-space:nowrap;
+    overflow:hidden;
+    border-right:3px solid white;
+}
+
+/* 👶 REVEAL GRANDE */
+.big-reveal{
+    font-size:3rem;
+    font-weight:900;
+    letter-spacing:3px;
+    text-shadow:0 0 20px rgba(255,255,255,0.6);
+    animation:pop 1s ease;
+    max-width:100%;
+}
+
+@keyframes pop{
+    from{transform:scale(0.6);opacity:0}
+    to{transform:scale(1);opacity:1}
+}
+
+h1{font-size:2.2rem}
+
+.box-container{
+    display:grid;
+    grid-template-columns:repeat(2,120px);
+    gap:20px;
+    justify-content:center;
+    margin-top:25px;
+}
+
+.box{
+    font-size:60px;
+    cursor:pointer;
+    transition:0.2s;
+    user-select:none;
+}
+
+.box:hover{
+    transform:scale(1.15);
+}
+
+.center-final{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:60vh;
+    padding:20px;
+    text-align:center;
 }
 
 </style>
@@ -120,36 +147,38 @@ h1{
 
 <body>
 
+<canvas id="particlesCanvas"></canvas>
 <canvas id="confettiCanvas"></canvas>
 
 <div class="container">
 
 <!-- INTRO -->
-
 <div id="intro" class="screen" style="display:block">
 
     <h1>👀 Tengo algo importante que contarles...</h1>
 
-    <p>
-        Pero antes quiero que intenten adivinar.
-    </p>
+    <p>Pero primero quiero que vean unas pistas 💭</p>
 
-    <button onclick="showOptions()">
-        Intentar adivinar
-    </button>
-
+    <button onclick="show(screens.clue1)">Empezar</button>
 </div>
 
-<!-- OPCIONES -->
-<div id="options" class="screen">
-    <h2>¿Qué creen que es?</h2>
+<!-- PISTAS -->
+<div id="clue1" class="screen fade">
+    <h1>🧳 Pista 1</h1>
+    <p>Algo relacionado con un viaje que está por comenzar...</p>
+    <button onclick="show(screens.clue2)">Siguiente ➜</button>
+</div>
 
-    <button onclick="wrong()">Nuevo trabajo</button>
-    <button onclick="wrong()">Viaje</button>
-    <button onclick="wrong()">Boda</button>
-    <button onclick="startGame()">No tengo idea</button>
+<div id="clue2" class="screen fade">
+    <h1>⏰ Pista 2</h1>
+    <p>El tiempo está marcando algo muy importante...</p>
+    <button onclick="show(screens.beforeGame)">Siguiente ➜</button>
+</div>
 
-    <p id="hint"></p>
+<div id="beforeGame" class="screen fade">
+    <h1>🤔 ¿No tienen idea?</h1>
+    <p>Bueno… vamos a jugar 😏</p>
+    <button onclick="startGame()">Empezar juego 🎮</button>
 </div>
 
 <!-- JUEGO -->
@@ -164,93 +193,113 @@ h1{
     <div id="letters"></div>
 
     <p>Errores: <span id="errors">0</span>/10</p>
-
 </div>
 
-<!-- REVEAL 1 -->
-<div id="reveal1" class="screen fade">
-    <h1>🎉 Lo lograron</h1>
+<!-- WIN 1 -->
+<div id="win1" class="screen fade">
+    <h1>🎉 ¡Bien hecho!</h1>
+    <p>Descubrieron la frase...</p>
+    <button onclick="showWin2()">Ver resultado ➜</button>
+</div>
 
-    <h2>
-        PRONTO HABRÁ UN NUEVO INTEGRANTE EN LA FAMILIA
-    </h2>
+<!-- WIN 2 -->
+<div id="win2" class="screen fade">
+    <h1>✨ Han descubierto que...</h1>
+    <div id="cinemaText" class="cinema-text"></div>
+    <button onclick="showSuspense()">Continuar ➜</button>
+</div>
 
-    <button onclick="showFinal()">
-        Continuar
+<!-- SUSPENSO -->
+<div id="suspense" class="screen fade">
+    <h1>🤍 Pero…</h1>
+    <h2>¿Quién?</h2>
+    <button onclick="showReveal()">🥁 Descubrir</button>
+</div>
+
+<!-- REVEAL (CAJAS MISTERIOSAS) -->
+<div id="reveal" class="screen fade">
+
+    <h1>🤍 Pero…</h1>
+    <h2>¿Quién?</h2>
+
+    <p>Elijan una caja… solo una tiene la respuesta 😏</p>
+
+    <div class="box-container">
+
+        <div class="box" onclick="wrongBox(this)">📦</div>
+        <div class="box" onclick="wrongBox(this)">📦</div>
+        <div class="box" onclick="wrongBox(this)">📦</div>
+        <div class="box" onclick="correctBox(this)">📦</div>
+
+    </div>
+	
+	<button onclick="show(screens.finalMessage)">Continuar ➜</button>
+</div>
+
+<!-- PERDER -->
+<div id="lose" class="screen fade">
+    <h1>😵 Perdieron</h1>
+    <button onclick="restartGame()">Intentar de nuevo 🔁</button>
+</div>
+
+<!-- SIGUIENTE PASO -->
+<div id="finalMessage" class="screen fade">
+
+    <h1>✨ Sorpresa…</h1>
+
+    <div class="center-final">
+
+        <div class="big-reveal">
+            Una nueva personita viene a ser parte de la familia 💛
+        </div>
+		
+	</div>	
+
+    <button onclick="showFinalMessage()">
+        Continuar ➜
     </button>
-</div>
-
-<!-- REVEAL FINAL -->
-<div id="reveal2" class="screen fade">
-
-    <h1 style="font-size:3rem">👶</h1>
-
-    <h1>Voy a ser papá</h1>
-
-    <p style="font-size:1.2rem;line-height:2">
-        Y como en los cuentos que uno no espera, la vida nos ha traído una noticia inesperada…<br>
-        una pequeña sorpresa que llega sin aviso, pero llena de luz.<br>
-		Hoy la recibo con el corazón abierto, con mucha emoción y ternura,<br>
-        y quería compartirla con mi familia, porque los cuentos más importantes siempre se viven mejor juntos. 💙
-    </p>
 
 </div>
 
+
 </div>
+
+<audio id="drumroll" src="https://www.soundjay.com/misc/sounds/drum-roll-1.mp3"></audio>
 
 <script>
 
-/* ===== PANTALLAS ===== */
 const screens = {
     intro:document.getElementById("intro"),
-    options:document.getElementById("options"),
+    clue1:document.getElementById("clue1"),
+    clue2:document.getElementById("clue2"),
+    beforeGame:document.getElementById("beforeGame"),
     game:document.getElementById("game"),
-    reveal1:document.getElementById("reveal1"),
-    reveal2:document.getElementById("reveal2")
+    win1:document.getElementById("win1"),
+    win2:document.getElementById("win2"),
+    suspense:document.getElementById("suspense"),
+    reveal:document.getElementById("reveal"),
+    lose:document.getElementById("lose"),
+	finalMessage: document.getElementById("finalMessage")
 };
 
 function show(s){
     Object.values(screens).forEach(x=>x.style.display="none");
     s.style.display="block";
+
+    if(s===screens.clue1||s===screens.clue2||s===screens.beforeGame){
+        startParticles();
+    } else {
+        stopParticles();
+    }
 }
-
-function showOptions(){show(screens.options)}
-function showFinal(){ 
-    show(screens.reveal2);
-    launchConfetti();
-}
-
-/* ===== OPCIONES ===== */
-function wrong(){
-
-    const randomHint =
-        hints[Math.floor(Math.random()*hints.length)];
-
-    document.getElementById("hint").innerText =
-        randomHint;
-
-}
-
-const hints = [
-"😏 No, sigan intentando...",
-"👀 Mmm… interesante, pero no",
-"🤭 Eso no es, pero van cerca...",
-"🫣 No… esto es más grande",
-"😬 Se están acercando… pero no",
-"🎯 Frío, frío...",
-"🔥 Caliente… pero no es eso"
-];
 
 /* ===== FRASE ===== */
-const phrase =
-"PRONTO HABRA UN NUEVO INTEGRANTE EN LA FAMILIA"
-.split(" ");
+const phrase="ALGUIEN VIENE".split("");
 
 let guessed=[];
 let errors=0;
-const maxErrors=10;
 
-/* ===== INICIO ===== */
+/* ===== GAME ===== */
 function startGame(){
     show(screens.game);
 
@@ -258,13 +307,13 @@ function startGame(){
     errors=0;
 
     document.getElementById("letters").innerHTML="";
-    createLetters();
+    document.getElementById("errors").innerText=0;
 
+    createLetters();
     updateWord();
     drawHangman(errors);
 }
 
-/* ===== LETRAS ===== */
 function createLetters(){
     const letters="ABCDEFGHIJKLMNÑOPQRSTUVWXYZ";
 
@@ -283,11 +332,7 @@ function createLetters(){
 
 function play(letter){
 
-    let found=false;
-
-    for(let w of phrase){
-        if(w.includes(letter)) found=true;
-    }
+    let found=phrase.includes(letter);
 
     if(found){
         guessed.push(letter);
@@ -296,8 +341,8 @@ function play(letter){
         document.getElementById("errors").innerText=errors;
         drawHangman(errors);
 
-        if(errors>=maxErrors){
-            lose();
+        if(errors>=10){
+            setTimeout(()=>show(screens.lose),500);
             return;
         }
     }
@@ -306,73 +351,62 @@ function play(letter){
     checkWin();
 }
 
-/* ===== PALABRA ===== */
 function updateWord(){
+    const c=document.getElementById("word");
+    c.innerHTML="";
 
-    const container =
-        document.getElementById("word");
-
-    container.innerHTML = "";
-
-    const fullPhrase =
-        phrase.join(" ");
-
-    for(let char of fullPhrase){
-
-        const span =
-            document.createElement("span");
-
-        // espacios entre palabras
-        if(char === " "){
-            span.innerHTML = "&nbsp;&nbsp;&nbsp;";
-        }
-        else if(guessed.includes(char)){
-            span.innerText = char;
-        }
-        else{
-            span.innerText = "_";
-        }
-
-        span.style.display = "inline-block";
-        span.style.minWidth = "18px";
-        span.style.textAlign = "center";
-
-        container.appendChild(span);
+    for(let x of phrase){
+        let s=document.createElement("span");
+        s.innerText = (x===" ") ? "   " : (guessed.includes(x) ? x : "_");
+        c.appendChild(s);
     }
 }
-/* ===== GANAR ===== */
+
 function checkWin(){
-
-    let done=true;
-
-    for(let w of phrase){
-        for(let l of w){
-            if(!guessed.includes(l)) done=false;
-        }
-    }
+    let done = phrase.every(l => l===" " || guessed.includes(l));
 
     if(done){
-        setTimeout(()=>{
-            show(screens.reveal1);
-        },800);
+        setTimeout(()=>show(screens.win1),800);
     }
 }
 
-/* ===== PERDER ===== */
-function lose(){
-    document.getElementById("game").innerHTML=`
-        <h1>😵 Se ahorcaron</h1>
-        <p>Intenten de nuevo para descubrir la noticia</p>
-        <button onclick="location.reload()">Reintentar</button>
-    `;
+/* ===== WIN FLOW ===== */
+function showWin2(){
+    show(screens.win2);
+
+    const text="ALGUIEN VIENE";
+    const el=document.getElementById("cinemaText");
+    el.innerHTML="";
+
+    let i=0;
+    function type(){
+        if(i<text.length){
+            el.innerHTML+=text[i++];
+            setTimeout(type,150);
+        }
+    }
+    type();
 }
 
-/* ===== AHORCADO CANVAS ===== */
+function showSuspense(){
+    show(screens.suspense);
+}
+
+function showReveal(){
+    show(screens.reveal);
+}
+
+function restartGame(){
+    guessed=[];
+    errors=0;
+    startGame();
+}
+
+/* ===== AHORCADO ===== */
 const canvas=document.getElementById("hangmanCanvas");
 const ctx=canvas.getContext("2d");
 
 function drawHangman(e){
-
     ctx.clearRect(0,0,250,250);
     ctx.lineWidth=4;
     ctx.strokeStyle="white";
@@ -389,6 +423,52 @@ function drawHangman(e){
     if(e>=10){ctx.beginPath();ctx.moveTo(150,150);ctx.lineTo(175,190);ctx.stroke();}
 }
 
+/* ===== PARTICLES ===== */
+const pc=document.getElementById("particlesCanvas");
+const pctx=pc.getContext("2d");
+
+pc.width=innerWidth;
+pc.height=innerHeight;
+
+let particles=[];
+
+function startParticles(){
+if(particles.length===0){
+for(let i=0;i<60;i++){
+particles.push({
+x:Math.random()*innerWidth,
+y:Math.random()*innerHeight,
+r:Math.random()*2+1,
+v:Math.random()*0.5+0.2
+});
+}
+}
+animateParticles();
+}
+
+function stopParticles(){
+particles=[];
+pctx.clearRect(0,0,pc.width,pc.height);
+}
+
+function animateParticles(){
+if(!particles.length) return;
+
+pctx.clearRect(0,0,pc.width,pc.height);
+
+particles.forEach(p=>{
+p.y-=p.v;
+if(p.y<0) p.y=innerHeight;
+
+pctx.beginPath();
+pctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+pctx.fillStyle="rgba(255,255,255,0.5)";
+pctx.fill();
+});
+
+requestAnimationFrame(animateParticles);
+}
+
 /* ===== CONFETTI ===== */
 const c=document.getElementById("confettiCanvas");
 const cx=c.getContext("2d");
@@ -399,33 +479,48 @@ c.height=innerHeight;
 let conf=[];
 
 function launchConfetti(){
-
 for(let i=0;i<200;i++){
-    conf.push({
-        x:Math.random()*innerWidth,
-        y:-20,
-        s:Math.random()*6+3,
-        v:Math.random()*4+2,
-        col:["#ff7eb3","#ffd166","#06d6a0","#ffffff"][Math.floor(Math.random()*4)]
-    });
+conf.push({
+x:Math.random()*innerWidth,
+y:-20,
+s:Math.random()*6+3,
+v:Math.random()*4+2,
+col:["#ff7eb3","#ffd166","#06d6a0","#fff"][Math.floor(Math.random()*4)]
+});
 }
-
 animate();
-
 }
 
 function animate(){
-
 cx.clearRect(0,0,c.width,c.height);
 
 conf.forEach(p=>{
-    cx.fillStyle=p.col;
-    cx.fillRect(p.x,p.y,p.s,p.s);
-    p.y+=p.v;
+p.y+=p.v;
+cx.fillStyle=p.col;
+cx.fillRect(p.x,p.y,p.s,p.s);
 });
 
 requestAnimationFrame(animate);
+}
 
+function wrongBox(el){
+    el.style.transform="scale(0.9)";
+    el.innerText="❌";
+    setTimeout(()=>{
+        el.style.transform="scale(1)";
+        el.innerText="📦";
+    },500);
+
+    alert("Nada aquí… 👀 sigue intentando");
+}
+
+function correctBox(el){
+    el.innerText="👶";
+    el.style.transform="scale(1.3)";
+}
+
+function showFinalMessage(){
+    show(screens.finalMessage);
 }
 
 </script>
