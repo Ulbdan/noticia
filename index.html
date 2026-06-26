@@ -323,8 +323,6 @@ h1{font-size:2.2rem}
         <div class="box" onclick="correctBox(this)">📦</div>
 
     </div>
-	
-	<button onclick="show(screens.finalMessage)">Continuar ➜</button>
 </div>
 
 <!-- PERDER -->
@@ -630,6 +628,16 @@ function wrongBox(el){
 function correctBox(el){
     el.innerText="👶";
     el.style.transform="scale(1.3)";
+	setTimeout(() => {
+
+        // ocultar cajas antes de cambiar
+        document.querySelector(".box-container").style.opacity = "0";
+
+        setTimeout(() => {
+            show(screens.finalMessage);
+        }, 800);
+
+    }, 1200);
 }
 
 function showFinalMessage(){
