@@ -142,6 +142,97 @@ h1{font-size:2.2rem}
     text-align:center;
 }
 
+.final-scene{
+    text-align:center;
+    padding:40px;
+    font-family: Arial, sans-serif;
+}
+
+.text-section p{
+    font-size:20px;
+	font-weight: bold;
+    margin:10px 0;
+}
+
+.suspense{
+    font-size:30px;
+    letter-spacing:5px;
+}
+
+.reveal-wrapper{
+    position:relative;
+    width:300px;
+    margin:40px auto;
+}
+
+#dadImage{
+    width:100%;
+    border-radius:20px;
+    filter:blur(25px);
+    transition:1.5s ease;
+}
+
+#blurOverlay{
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(255,255,255,0.4);
+    backdrop-filter: blur(5px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    border-radius:20px;
+    font-size:18px;
+    font-weight:bold;
+    transition:0.5s;
+}
+
+#finalText{
+    opacity:0;
+    margin-top:20px;
+    transition:1s ease;
+    font-size:32px;
+}
+
+.text-section {
+    text-align: center;
+    color: white;
+    font-size: 22px;
+    line-height: 1.6;
+    padding: 20px;
+}
+
+.line {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeUp 1s forwards;
+}
+
+.delay-1 { animation-delay: 1s; }
+.delay-2 { animation-delay: 2s; }
+.delay-3 { animation-delay: 3s; }
+
+.suspense {
+    font-size: 26px;
+    font-weight: bold;
+    color: #ff4d6d;
+}
+
+@keyframes fadeUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.highlight {
+    font-weight: bold;
+    font-size: 32px;
+    color: #ffffff;
+}
 </style>
 </head>
 
@@ -242,26 +333,47 @@ h1{font-size:2.2rem}
     <button onclick="restartGame()">Intentar de nuevo 🔁</button>
 </div>
 
-<!-- SIGUIENTE PASO -->
+<!-- FINAL MESSAGE -->
 <div id="finalMessage" class="screen fade">
 
     <h1>✨ Sorpresa…</h1>
 
     <div class="center-final">
-
         <div class="big-reveal">
-            Una nueva personita viene a ser parte de la familia 💛
+            <p>Tienen que hacer un espacito más en su corazón ❤️</p>
+            <p>Porque una nueva personita viene a ser parte de la familia🤍</p>
         </div>
-		
-	</div>	
+    </div>
 
-    <button onclick="showFinalMessage()">
+    <button onclick="show(screens.finalScene)">
         Continuar ➜
     </button>
 
 </div>
 
+<!-- FINAL SCENE -->
+<div id="finalScene" class="screen fade">
 
+    <div class="text-section">
+        <p class="line fade-in">Y así familia, comienza un <span class="highlight">nuevo capítulo</span>.</p>
+		<p class="line fade-in delay-1">Uno lleno de aprendizaje, amor y aventuras.</p>
+		<p class="line fade-in delay-2">Un capítulo en el que...</p>
+        <p class="suspense">...</p>
+    </div>
+
+    <div class="reveal-wrapper">
+
+        <div id="blurOverlay" onclick="revealDad()">
+            <span>✨ Toca para descubrir ✨</span>
+        </div>
+
+        <img id="dadImage" src="yo.png" alt="Yo voy a ser papá">
+
+        <h1 id="finalText">Voy a ser papá ❤️</h1>
+
+    </div>
+
+</div>
 </div>
 
 <audio id="drumroll" src="https://www.soundjay.com/misc/sounds/drum-roll-1.mp3"></audio>
@@ -279,7 +391,8 @@ const screens = {
     suspense:document.getElementById("suspense"),
     reveal:document.getElementById("reveal"),
     lose:document.getElementById("lose"),
-	finalMessage: document.getElementById("finalMessage")
+	finalMessage: document.getElementById("finalMessage"),
+	finalScene: document.getElementById("finalScene")
 };
 
 function show(s){
@@ -523,6 +636,26 @@ function showFinalMessage(){
     show(screens.finalMessage);
 }
 
+function revealDad(){
+
+    document.getElementById("blurOverlay").style.display = "none";
+	
+	// quitar blur de la imagen
+    document.getElementById("dadImage").style.filter = "blur(0px)";
+
+    // ocultar overlay
+    document.getElementById("blurOverlay").style.opacity = "0";
+
+    setTimeout(() => {
+        document.getElementById("blurOverlay").style.display = "none";
+    }, 500);
+
+    // mostrar texto final
+    setTimeout(() => {
+        document.getElementById("finalText").style.opacity = "1";
+    }, 900);
+
+}
 </script>
 
 </body>
